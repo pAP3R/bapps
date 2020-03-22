@@ -789,9 +789,6 @@ class GWTParser(object):
 
         return value
     
-    def return_Deserialized(self):
-        return self
-
 
     def __init__( self ):
         self.burp = False

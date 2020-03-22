@@ -1,0 +1,14 @@
+Changelog
+
+
+1.1 - 3/21/20
+
+- Modifications to GWTParser.py
+- Added mroe control over GWT tab
+
+1.0 
+
+- Added GWT Tab
+	Populated GWT content
+- Integrated gwtparse into debug output
+	https://github.com/GDSSecurity/GWT-Penetration-Testing-Toolset/blob/master/gwtparse/gwtparse.py
