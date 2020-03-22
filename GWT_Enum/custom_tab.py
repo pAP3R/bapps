@@ -92,13 +92,16 @@ class GWTEnumTab(IMessageEditorTab):
 
             text = gwt.deserialize(msg)
             print(text)
-            gwt.display()
+            value = gwt.display()
 
-            self._txtInput.setText(text)
+            print(value)
+
+            #self._txtInput.setText(self._helpers.stringToBytes(value))
+            self._txtInput.setText(msg)
             self._txtInput.setEditable(self._editable)
 
         self._currentMessage = content
-        return
+        
         
     def getMessage(self):    
 

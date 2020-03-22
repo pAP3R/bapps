@@ -733,6 +733,7 @@ class GWTParser(object):
     '''
     def display(self):
     
+        value = ""
         if self.fout:
             self.fout.write("==================================\n")
             self.fout.write(str("Serialized Object:").rjust(INDENTATION) + "\n" + self.rpc_string + "\n\n")
@@ -746,6 +747,7 @@ class GWTParser(object):
             self.fout.write(str("# of Params:").rjust(INDENTATION) + "\t" + str(len(self.parameters)) + "\n")
             self.fout.write(str("Parameters:").rjust(INDENTATION)+"\n")
         else:   
+            
             print (str("\nSerialized Object:").rjust(INDENTATION) + "\n" + self.rpc_string + "\n")
             print (str("Stream Version:").rjust(INDENTATION) + "\t" + str(self.stream_version))
             print (str("Flags:").rjust(INDENTATION) + "\t" + str(self.flags))
@@ -756,12 +758,27 @@ class GWTParser(object):
             print (str("Method:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[3])
             print (str("# of Params:").rjust(INDENTATION) + "\t" + str(len(self.parameters)) + "\n")
             print (str("Parameters:").rjust(INDENTATION))
+            
+            value += str("\nSerialized Object:").rjust(INDENTATION) + "\n" + self.rpc_string + "\n"
+            value += str("Stream Version:").rjust(INDENTATION) + "\t" + str(self.stream_version)
+            value += str("Flags:").rjust(INDENTATION) + "\t" + str(self.flags)
+            value += str("Column Numbers:").rjust(INDENTATION) + "\t" + str(self.columns)
+            value += str("Host:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[0]
+            value += str("Hash:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[1]
+            value += str("Class Name:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[2]
+            value += str("Method:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[3]
+            value += str("# of Params:").rjust(INDENTATION) + "\t" + str(len(self.parameters)) + "\n"
+            value += str("Parameters:").rjust(INDENTATION)
         
         for parameter in self.parameters:
             if self.fout:
                 pprint.pprint(parameter.__dict__, stream=self.fout, indent="1")
+
             else:
                 pprint.pprint(parameter.__dict__, indent="1")
+                value += pprint.pformat(parameter.__dict__, indent="1")
+
+                
              
         print( "\n" )
              
@@ -769,7 +786,13 @@ class GWTParser(object):
             self.fout.write( "\n" )
         else:
             print ("\n")
-            
+
+        return value
+    
+    def return_Deserialized(self):
+        return self
+
+
     def __init__( self ):
         self.burp = False
         self.surround_value = ""
