@@ -39,12 +39,19 @@ Current Features:
 
 - Custom HTTP message tab 
 - GWT-RPC deserialized payload in extension output
+- Full tab
+	+ Message parser
+	+ Insertion point auto-do-er
 
 Features Planned:
 
 - Split custom tab to GWT up top, bottom half deserialized
-- Identify fuzz points (set_fuzzable)
-- Add full tab for enum (like wsdler)
+- DONE - Identify fuzz points (set_fuzzable)
+- WIP - Add full tab for enum (like wsdler)
+- Context menu options (Send selected text / request, etc)
+- Error handling
+	Parse failures, etc
+- GWT-RPC detection
 
 
 

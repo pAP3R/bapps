@@ -706,6 +706,9 @@ class GWTParser(object):
     Handles the parsing of the RPC string
     '''
     def deserialize(self, rpc_string):
+
+
+
         self._cleanup()
         self.rpc_string = rpc_string
         self._read_string_into_list()
@@ -720,13 +723,18 @@ class GWTParser(object):
     
     def get_fuzzstr(self):
         fuzzstr = "|".join( self.rpc_list_fuzzable )+"|"
-        
+        value = ""        
+
         if self.fout:   
             self.fout.write( fuzzstr+"\n" )
+            value += fuzzstr
+            return value
             
         else:
             print( "\nGWT RPC Payload Fuzz String\n" )
             print( fuzzstr+"\n" )
+            value += fuzzstr
+            return value
         
     '''
     Prints out the deserialized method call in a user friendly format
@@ -759,16 +767,16 @@ class GWTParser(object):
             print (str("# of Params:").rjust(INDENTATION) + "\t" + str(len(self.parameters)) + "\n")
             print (str("Parameters:").rjust(INDENTATION))
             
-            value += str("\nSerialized Object:").rjust(INDENTATION) + "\n" + self.rpc_string + "\n"
-            value += str("Stream Version:").rjust(INDENTATION) + "\t" + str(self.stream_version)
-            value += str("Flags:").rjust(INDENTATION) + "\t" + str(self.flags)
-            value += str("Column Numbers:").rjust(INDENTATION) + "\t" + str(self.columns)
-            value += str("Host:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[0]
-            value += str("Hash:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[1]
-            value += str("Class Name:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[2]
-            value += str("Method:").rjust(INDENTATION) + "\t" + self.rpc_deserialized[3]
-            value += str("# of Params:").rjust(INDENTATION) + "\t" + str(len(self.parameters)) + "\n"
-            value += str("Parameters:").rjust(INDENTATION)
+            value += str("\nSerialized Object:") + "\n" + self.rpc_string + "\n\n"
+            value += str("Stream Version:") + "\t" + str(self.stream_version) + "\n"
+            value += str("Flags:") + "\t\t" + str(self.flags) + "\n"
+            value += str("Column Numbers:") + "\t" + str(self.columns) + "\n"
+            value += str("Host:") + "\t\t" + self.rpc_deserialized[0] + "\n"
+            value += str("Hash:") + "\t\t" + self.rpc_deserialized[1] + "\n"
+            value += str("Class Name:") + "\t\t" + self.rpc_deserialized[2] + "\n"
+            value += str("Method:") + "\t\t" + self.rpc_deserialized[3] + "\n"
+            value += str("# of Params:") + "\t\t" + str(len(self.parameters)) + "\n\n"
+            value += str("Parameters:") + "\n"
         
         for parameter in self.parameters:
             if self.fout:
@@ -791,7 +799,7 @@ class GWTParser(object):
     
 
     def __init__( self ):
-        self.burp = False
+        self.burp = True
         self.surround_value = ""
         self.replace_value = ""
         self.fout = None
