@@ -28,7 +28,7 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         self._helpers = callbacks.getHelpers()
         
         # set our extension name
-        callbacks.setExtensionName("GWT Enumerator")
+        callbacks.setExtensionName("GWT-RPC Enumerator")
         
         # register ourselves as a message editor tab factory
         callbacks.registerMessageEditorTabFactory(self)
@@ -48,8 +48,8 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         # GWT Message Tab
         boxVertical = swing.Box.createVerticalBox()
         boxHorizontal = swing.Box.createHorizontalBox()
-        textLabel = swing.JLabel("GWT Message")
-        boxHorizontal.add(textLabel)
+        gwtRPCTextLabel = swing.JLabel("GWT-RPC Message")
+        boxHorizontal.add(gwtRPCTextLabel)
         boxVertical.add(boxHorizontal)
 
         # Create the text area itself
@@ -76,9 +76,9 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         self.tab.add("Center", tabbedPane);
 
         # First tab
-        firstTab = swing.JPanel()
-        firstTab.layout = BorderLayout()
-        tabbedPane.addTab("Parse", firstTab)
+        parseTab = swing.JPanel()
+        parseTab.layout = BorderLayout()
+        tabbedPane.addTab("Parse", parseTab)
 
         '''
         # Second tab
@@ -95,7 +95,7 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         
         boxHorizontal = swing.Box.createHorizontalBox()
         self.parsedGWTField = swing.JTextArea()
-        boxHorizontal.add(swing.JLabel("  Parsed GWT    :"))
+        boxHorizontal.add(swing.JLabel("  Parsed GWT-RPC:"))
         boxHorizontal.add(self.parsedGWTField)
         boxVertical.add(boxHorizontal)
 
@@ -105,7 +105,7 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         boxHorizontal.add(self.insertPointField)
         boxVertical.add(boxHorizontal)
 
-        firstTab.add(boxVertical, "Center")
+        parseTab.add(boxVertical, "Center")
 
         # Add the custom tab to Burp's UI
         callbacks.addSuiteTab(self)
@@ -127,7 +127,7 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
     # Implement ITab
     def getTabCaption(self):
         """Return the text to be displayed on the tab"""
-        return "GWT Enumerator"
+        return "GWT-RPC Enumerator"
 
     # 
     # implement IMessageEditorTabFactory
@@ -141,34 +141,47 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         """Passes the UI to burp"""
         return self.tab
 
-
+    # Create the context menu for sending GWT-RPC bodies to the enum tab
+    #
     def createMenuItems(self, invocation):
         self.context = invocation
         menuList = ArrayList()
-        menuItem = JMenuItem("Send selected text to GWT Enumerator", actionPerformed=self.sendtoGWT)
+        menuItem = JMenuItem("Send GWT-RPC body to GWT Enumerator", actionPerformed=self.sendtoGWT)
         menuList.add(menuItem)
         return menuList
 
 
+    # Called on context menu click
+    # 
     def sendtoGWT(self, event):
-        pass
-        '''
-        messages = self.context.getSelectedMessages()
-        print(type(messages))
-        print(dir(messages))
-        print(messages.tostring())
+        
+        # Get IHTTPRequestResponse object , run getRequest against it to create IRequestInfo object
+        # IHttpRequestResponse[] getSelectedMessages();
+        msg = self.context.getSelectedMessages()[0].getRequest()
+
+        # Analyze the IRequestInfo object and create a temp value to grab the body contents
+        r_temp = self._helpers.analyzeRequest(msg)
+        message = msg[r_temp.getBodyOffset():].tostring()
+        
         values = []
 
-        r = self._helpers.analyzeRequest(messages[0])
-        print(r)
+        # Clear the contents of each text area/box if they're not empty
+        if len(self.gwtTextArea.text) > 1:
+            self.gwtTextArea.text = ""
+            self.parsedGWTField.text = ""
+            self.insertPointField.text = ""
 
-        for value in messages:
-            values.append(str(value))
-        print(values)
-
-        for value in values:
+        for value in message:
             self.gwtTextArea.append(value)
-        '''
+
+        try: 
+            # Call parseGWT when sent via Context-Menu
+            self.parseGWT(self)
+        except Exception as er:
+            # Print whatever exception occurred if the body was not parsed properly
+            print("[!] Exception occurred, is the body a valid GWT-RPC?\nException:")
+            print(er)
+        
 
 
 #FixBurpExceptions()
@@ -184,8 +197,8 @@ class GWTEnumTab(IMessageEditorTab):
         self._helpers = extender._helpers
         
         # create an instance of Burp's text editor, to display our deserialized data
-        self._txtInput = extender._callbacks.createTextEditor()
-        self._txtInput.setEditable(editable)
+        self._gwtMessageTabInput = extender._callbacks.createTextEditor()
+        self._gwtMessageTabInput.setEditable(editable)
         
     #
     # implement IMessageEditorTab
@@ -195,7 +208,7 @@ class GWTEnumTab(IMessageEditorTab):
         return "GWT Enum"
         
     def getUiComponent(self):
-        return self._txtInput.getComponent()
+        return self._gwtMessageTabInput.getComponent()
         
     def isEnabled(self, content, isRequest):
         # enable this tab for requests containing a data parameter
@@ -209,8 +222,8 @@ class GWTEnumTab(IMessageEditorTab):
 
         if content is None:
             # clear our display
-            self._txtInput.setText(None)
-            self._txtInput.setEditable(False)
+            self._gwtMessageTabInput.setText(None)
+            self._gwtMessageTabInput.setEditable(False)
         
         else:
 
@@ -229,9 +242,9 @@ class GWTEnumTab(IMessageEditorTab):
 
             print(value)
 
-            #self._txtInput.setText(self._helpers.stringToBytes(value))
-            self._txtInput.setText(msg)
-            self._txtInput.setEditable(self._editable)
+            #self._gwtMessageTabInput.setText(self._helpers.stringToBytes(value))
+            self._gwtMessageTabInput.setText(msg)
+            self._gwtMessageTabInput.setEditable(self._editable)
 
         self._currentMessage = content
         
@@ -239,9 +252,9 @@ class GWTEnumTab(IMessageEditorTab):
     def getMessage(self):    
 
         # determine whether the user modified the deserialized data
-        if self._txtInput.isTextModified():
+        if self._gwtMessageTabInput.isTextModified():
             # Get text of message 
-            data = self._helpers.bytesToString(self._txtInput.getText())
+            data = self._helpers.bytesToString(self._gwtMessageTabInput.getText())
             #print("Text: " + data)
 
             # Get full request and return with the changed data
@@ -252,9 +265,9 @@ class GWTEnumTab(IMessageEditorTab):
         return self._currentMessage
     
     def isModified(self):
-        return self._txtInput.isTextModified()
+        return self._gwtMessageTabInput.isTextModified()
     
     def getSelectedData(self):
-        return self._txtInput.getSelectedText()
+        return self._gwtMessageTabInput.getSelectedText()
 
 
