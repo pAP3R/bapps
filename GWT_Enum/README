@@ -35,6 +35,12 @@ Deserialized:
 	 'values': ['myInput2']}
 
 
+Usage:
+
+1. Add gwtEnumerator.py to Burp extensions
+	That's it
+
+
 Current Features:
 
 - Custom HTTP message tab 
