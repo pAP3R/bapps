@@ -36,79 +36,9 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         # Register for context menu use
         callbacks.registerContextMenuFactory(self)
 
-        # Create the tab
-        self.tab = swing.JPanel(BorderLayout())
-
-        # Tab options / layout
-
-        # Create the text area at the top of the tab
-        textPanel = swing.JPanel()
-        
-        # Create the label for the text area
-        # GWT Message Tab
-        boxVertical = swing.Box.createVerticalBox()
-        boxHorizontal = swing.Box.createHorizontalBox()
-        gwtRPCTextLabel = swing.JLabel("GWT-RPC Message")
-        boxHorizontal.add(gwtRPCTextLabel)
-        boxVertical.add(boxHorizontal)
-
-        # Create the text area itself
-        boxHorizontal = swing.Box.createHorizontalBox()
-        self.gwtTextArea = swing.JTextArea('', 4, 120)
-        self.gwtTextArea.setLineWrap(True)
-        boxHorizontal.add(self.gwtTextArea)
-        boxVertical.add(boxHorizontal)
-
-        # Add the text label and area to the text panel
-        textPanel.add(boxVertical)
-
-        # Add the text panel to the top of the main tab
-        self.tab.add(textPanel, BorderLayout.NORTH) 
-
-        # Button for first tab
-        buttonPanel = swing.JPanel()
-        buttonPanel.add(swing.JButton('Parse', actionPerformed=self.parseGWT))
-        textPanel.add(buttonPanel)
-
-        # Created a tabbed pane to go in the center of the
-        # main tab, below the text area
-        tabbedPane = swing.JTabbedPane()
-        self.tab.add("Center", tabbedPane);
-
-        # First tab
-        parseTab = swing.JPanel()
-        parseTab.layout = BorderLayout()
-        tabbedPane.addTab("Parse", parseTab)
-
-        '''
-        # Second tab
-        secondTab = swing.JPanel()
-        secondTab.layout = BorderLayout()
-        tabbedPane.addTab("Insertion Points", secondTab)
-        '''
-
-        # Panel for the boxes. Each label and text field
-        # will go in horizontal boxes which will then go in 
-        # a vertical box
-        parsePanel = swing.JPanel()
-        boxVertical = swing.Box.createVerticalBox()
-        
-        boxHorizontal = swing.Box.createHorizontalBox()
-        self.parsedGWTField = swing.JTextArea()
-        boxHorizontal.add(swing.JLabel("  Parsed GWT-RPC:"))
-        boxHorizontal.add(self.parsedGWTField)
-        boxVertical.add(boxHorizontal)
-
-        boxHorizontal = swing.Box.createHorizontalBox()
-        self.insertPointField = swing.JTextArea()
-        boxHorizontal.add(swing.JLabel("  Insertion Points:"))
-        boxHorizontal.add(self.insertPointField)
-        boxVertical.add(boxHorizontal)
-
-        parseTab.add(boxVertical, "Center")
-
-        # Add the custom tab to Burp's UI
+        # Register GUI, calls getUIComponent()
         callbacks.addSuiteTab(self)
+
         return
         
 
@@ -127,7 +57,7 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
     # Implement ITab
     def getTabCaption(self):
         """Return the text to be displayed on the tab"""
-        return "GWT-RPC Enumerator"
+        return "GWT-RPCer"
 
     # 
     # implement IMessageEditorTabFactory
@@ -137,8 +67,101 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         # create a new instance of our custom editor tab
         return GWTEnumTab(self, controller, editable)
 
+    # Passes the UI to burp
     def getUiComponent(self):
-        """Passes the UI to burp"""
+        # Create the tab
+        self.tab = swing.JPanel(BorderLayout())
+
+        # Created a tabbed pane to go in the center of the
+        # main tab, below the text area
+        tabbedPane = swing.JTabbedPane()
+        self.tab.add("Center", tabbedPane);
+
+        # First tab
+        parseTab = swing.JPanel(BorderLayout())
+        tabbedPane.addTab("Parser", parseTab)        
+        
+        # Second tab
+        enumTab = swing.JPanel(BorderLayout())
+        tabbedPane.addTab("Enumerate Functions", enumTab)
+
+        # Create a vertical box to house GWT message and label
+        # Create a horizontal box for GWT-RPC text box's label
+        # Add the label to the horizontal box
+        # Add the horizontal box to the vertical box
+        gwtMessageBoxVertical = swing.Box.createVerticalBox()
+        gwtLabelBoxHorizontal = swing.Box.createHorizontalBox()
+        gwtRPCTextLabel = swing.JLabel("GWT-RPC Message")
+        gwtLabelBoxHorizontal.add(gwtRPCTextLabel)
+        gwtMessageBoxVertical.add(gwtLabelBoxHorizontal)
+
+        # Create a horizontal text box to house the GWT message itself
+        # Add text area to message box
+        # Add new box to gwtMessageBoxVertical
+        gwtMessageTextBoxHorizontal = swing.Box.createHorizontalBox()
+        self.gwtTextArea = swing.JTextArea('', 4, 120)
+        self.gwtTextArea.setLineWrap(True)
+        gwtMessageTextBoxHorizontal.add(self.gwtTextArea)
+        gwtMessageBoxVertical.add(gwtMessageTextBoxHorizontal)
+
+        #
+        gwtParseButtonBoxHorizontal = swing.Box.createHorizontalBox()    
+        parseButtonPanel = swing.JPanel()
+        parseButtonPanel.add(swing.JButton('Parse', actionPerformed=self.parseGWT))
+        gwtParseButtonBoxHorizontal.add(parseButtonPanel)
+        gwtMessageBoxVertical.add(gwtParseButtonBoxHorizontal)
+
+        # Panel for the boxes. Each label and text field
+        # will go in horizontal boxes which will then go in 
+        # a vertical box
+
+        parseTabGWTMessageBoxHorizontal = swing.Box.createHorizontalBox()
+        parseTabGWTMessageBoxHorizontal.add(gwtMessageBoxVertical)
+        parseTab.add("North", parseTabGWTMessageBoxHorizontal)
+
+        parsedBoxVertical = swing.Box.createVerticalBox()
+
+        parsedBoxHorizontal = swing.Box.createHorizontalBox()
+        self.parsedGWTField = swing.JTextArea()
+        parsedBoxHorizontal.add(self.parsedGWTField)
+        parsedBoxVertical.add(parsedBoxHorizontal)
+
+        # Label for the insertion points box
+        # horizontal box (label)
+        # horizontal box (textarea)
+        # inside a vertical box (insertBoxVertical)
+        insertBoxVertical = swing.Box.createVerticalBox()
+
+        insertPointBoxHorizontal = swing.Box.createHorizontalBox()
+        self.insertPointField = swing.JTextArea()
+        insertPointBoxHorizontal.add(self.insertPointField)
+        insertBoxVertical.add(insertPointBoxHorizontal)
+
+        functions = ["test", "test2"]
+        functionList = swing.JList(functions)
+
+
+        # Create and set split pane contents for enumerate tab
+        spl = swing.JSplitPane(swing.JSplitPane.HORIZONTAL_SPLIT)
+        spl.leftComponent = swing.JScrollPane(functionList)
+        spl.rightComponent = swing.JLabel("right")
+
+        enumTab.add("Center", spl)
+      
+        parseTabTabbedPane = swing.JTabbedPane()
+        parseTab.add(parseTabTabbedPane);
+
+        # Parse tab
+        parsedRPCTab = swing.JPanel(BorderLayout())
+        parseTabTabbedPane.addTab("Parsed", parsedRPCTab)        
+        
+        # Insert points tab
+        insertPointsTab = swing.JPanel(BorderLayout())
+        parseTabTabbedPane.addTab("Insertion Points", insertPointsTab)
+
+        parsedRPCTab.add("Center", parsedBoxVertical)
+        insertPointsTab.add("Center", insertBoxVertical)
+
         return self.tab
 
     # Create the context menu for sending GWT-RPC bodies to the enum tab
@@ -146,14 +169,16 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
     def createMenuItems(self, invocation):
         self.context = invocation
         menuList = ArrayList()
-        menuItem = JMenuItem("Send GWT-RPC body to GWT Enumerator", actionPerformed=self.sendtoGWT)
-        menuList.add(menuItem)
+        parseGWTMenuItem = JMenuItem("GWT-RPCer - Parse GWT-RPC body", actionPerformed=self.parseGWTBody)
+        enumGWTMenuItem = JMenuItem("GWT-RPCer - Enumerate supported GWT-RPC functions", actionPerformed=self.enumGWTFunctions)
+        menuList.add(parseGWTMenuItem)
+        menuList.add(enumGWTMenuItem)
         return menuList
 
 
     # Called on context menu click
     # 
-    def sendtoGWT(self, event):
+    def parseGWTBody(self, event):
         
         # Get IHTTPRequestResponse object , run getRequest against it to create IRequestInfo object
         # IHttpRequestResponse[] getSelectedMessages();
@@ -182,7 +207,9 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
             print("[!] Exception occurred, is the body a valid GWT-RPC?\nException:")
             print(er)
         
-
+    def enumGWTFunctions(self, event):
+        print("It works!")
+        pass
 
 #FixBurpExceptions()
 
