@@ -35,29 +35,47 @@ Deserialized:
 	 'values': ['myInput2']}
 
 
-Usage:
+Install:
 
 1. Add gwtEnumerator.py to Burp extensions
 	That's it
+	Buncha extra garbage that I'll clean up later
+
+Usage:
+
+	Parsing GWT-RPC requests
+		1. Right click request with a GWT body and send it to the parser
+		2. In the GWT-RPCer tab, the parser tab should be prepopulated with the serialized object, deserialized object and insertion points (if any) added
+
+	Scanning GWT-RPC
+		1. Send the request to the parser or paste the GWT body into it
+		2. Select the 'Insertion points' tab and copy the output
+		3. Send the full request to intruder, replace the GWT payload with the parser's output
+		4. Scan manual insertion points
+
+		No ETA on scanner integration
+
+
 
 
 Current Features:
 
 - Custom HTTP message tab 
-- GWT-RPC deserialized payload in extension output
-- Full tab
+- GUI tab
 	+ Message parser
 	+ Insertion point auto-do-er
 
 Features Planned:
 
 - Split custom tab to GWT up top, bottom half deserialized
-- DONE - Identify fuzz points (set_fuzzable)
+- DONE - Identify fuzz points
 - WIP - Add full tab for enum (like wsdler)
-- Context menu options (Send selected text / request, etc)
+- DONE - Context menu options (Send selected text / request, etc)
 - Error handling
-	Parse failures, etc
-- GWT-RPC detection
+	Handle parse failures, etc
+- DONE - GWT-RPC detection
+	WIP - Varying versions
+- Scanner integration
 
 
 

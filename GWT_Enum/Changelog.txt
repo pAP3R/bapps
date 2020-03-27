@@ -1,5 +1,14 @@
 Changelog
 
+1.2.1 - 3/27/20
+
+- Implemented auto detection of GWT-RPC requests
+- Updated context menu items and invocations
+- Pseudo incorporated gwtEnum
+	Only works on old GWT versions, newer version are more obfuscated
+- Various tab name changes / formatting
+
+
 1.2  - 3/23/20
 
 - Implemented GUI (GWT Enumerator) tab via Swing
