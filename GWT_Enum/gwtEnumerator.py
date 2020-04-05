@@ -169,16 +169,31 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         # https://portswigger.net/burp/extender/api/burp/IContextMenuInvocation.html
 
         menuContext = invocation.getInvocationContext()
-        print(menuContext)
 
-        if menuContext == 3 or menuContext == 4 or menuContext == 6:
-            enumGWTMenuItem = JMenuItem("GWT-RPCer - Enumerate supported GWT-RPC functions", actionPerformed=self.enumGWTFunctions)
-            menuList.add(enumGWTMenuItem)
-        if menuContext == 0 or menuContext == 2:
-            parseGWTMenuItem = JMenuItem("GWT-RPCer - Parse GWT-RPC body", actionPerformed=self.parseGWTBody)
-            menuList.add(parseGWTMenuItem)
+        # Check if GWT present
+        # Get IHTTPRequestResponse object , run getRequest against it to create IRequestInfo object
+        # IHttpRequestResponse[] getSelectedMessages();
+        msg = self.context.getSelectedMessages()[0].getRequest()
 
-        return menuList
+        # Analyze the IRequestInfo object and create a temp value to grab the body contents
+        r_temp = self._helpers.analyzeRequest(msg)
+        message = msg[r_temp.getBodyOffset():].tostring()
+        # Match on 1|1|1|blah|
+        match = re.match("^\d\|\d\|\d\|.*\|", message)
+
+        # Return appropriate menu items
+        if match:
+            if menuContext == 3 or menuContext == 4 or menuContext == 6:
+                enumGWTMenuItem = JMenuItem("GWT-RPCer - Enumerate supported GWT-RPC functions", actionPerformed=self.enumGWTFunctions)
+                menuList.add(enumGWTMenuItem)
+                return menuList 
+            if menuContext == 0 or menuContext == 2:
+                parseGWTMenuItem = JMenuItem("GWT-RPCer - Parse GWT-RPC body", actionPerformed=self.parseGWTBody)
+                menuList.add(parseGWTMenuItem)
+                return menuList 
+        else:
+            return menuList        
+
 
     # Call the GWT Parser to parse the GWT, duh
     #
@@ -192,6 +207,7 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
         
         self.parsedGWTField.text = str(value)
         self.insertPointField.text = gwt.get_fuzzstr()
+    
 
     # Called on context menu click
     # 
@@ -219,7 +235,15 @@ class BurpExtender(IBurpExtender, ITab, IMessageEditorTabFactory, IContextMenuFa
 
         # Call parseGWT when sent via Context-Menu
         try: 
-            self.parseGWT(self)
+            gwt = GWTParser()
+            gwt.burp
+    
+            gwt_Deser = gwt.deserialize(self.gwtTextArea.text)
+            value = gwt.display()
+            
+            self.parsedGWTField.text = str(value)
+            self.insertPointField.text = gwt.get_fuzzstr()
+
         except Exception as er:
             # Print whatever exception occurred if the body was not parsed properly
             print("[!] Exception occurred, is the body a valid GWT-RPC?\nException:")
@@ -276,6 +300,8 @@ class GWTEnumTab(IMessageEditorTab):
         
     def getUiComponent(self):
         return self._gwtMessageTabInput.getComponent()
+        
+
         
     def isEnabled(self, content, isRequest):
         # enable this tab for requests containing GWT values in the request body
